@@ -1,0 +1,5 @@
+const createBlog = (req, res) => {
+  res.send("new blog create");
+};
+
+module.exports = { createBlog };
