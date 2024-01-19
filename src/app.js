@@ -7,5 +7,4 @@ const blogRoute = require("./routes/blogRoute");
 app.use(express.json());
 app.use("/api/auth", userRouter);
 app.use("/api/blog", blogRoute);
-
 module.exports = app;
