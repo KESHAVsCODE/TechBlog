@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const signup = async (req, res) => {
   const { userName, email, password } = req.body;
+  console.log(userName, email, password);
   try {
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
@@ -16,13 +17,18 @@ const signup = async (req, res) => {
       .status(200)
       .json({ status: "success", message: "user created successfully." });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(400).json({ status: "failed", message: error.message });
   }
 };
 
 const login = async (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ status: "failed", message: "invalid credentials!" });
+  }
 
   try {
     const user = await User.findOne({ email: email });

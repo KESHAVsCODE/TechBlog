@@ -20,4 +20,4 @@ const BlogSchema = new Schema({
 
 const Blog = model("blogs", BlogSchema);
 
-module.exports = BlogModel;
+module.exports = Blog;

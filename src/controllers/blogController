@@ -1,5 +1,25 @@
-const createBlog = (req, res) => {
-  res.send("new blog create");
+const Blog = require("../models/blogModel");
+const User = require("../models/userModel");
+const createBlog = async (req, res) => {
+  const { title, description, imageUrl, tag, userId } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    const blog = await Blog.create({
+      title,
+      description,
+      userId,
+      userName: user.userName,
+      tag,
+      imageUrl,
+    });
+
+    res.status(200).json({ status: "success", data: blog });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ status: "failed", error: error.message });
+  }
 };
 
 module.exports = { createBlog };
