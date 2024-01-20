@@ -3,7 +3,6 @@ const dotEnv = require("dotenv");
 dotEnv.config();
 
 require("./connectDB");
-
 const PORT = process.env.PORT;
 
 app.listen(PORT, (error) => {

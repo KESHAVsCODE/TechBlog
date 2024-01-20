@@ -30,17 +30,48 @@ const getAllBlogs = async (req, res) => {
     res.status(200).json({ status: "success", data: blogs });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "success", message: error.message });
+    res.status(500).json({ status: "failed", message: error.message });
   }
 };
+
 const getMyBlogs = async (req, res) => {
   try {
     const blogs = await User.findById(req.userId).select({ blogs: 1 });
     res.status(200).json({ status: "success", data: blogs });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "success", message: error.message });
+    res.status(500).json({ status: "failed", message: error.message });
   }
 };
 
-module.exports = { createBlog, getAllBlogs, getMyBlogs };
+const updateMyBlog = async (req, res) => {
+  const { title, description, imageUrl, tags } = req.body;
+
+  if (!title && !description && !imageUrl && !tags) {
+    return res
+      .status(200)
+      .json({ status: "success", message: "no updates provided" });
+  }
+
+  try {
+    const updatedValues = {
+      ...(title && { title }),
+      ...(description && { description }),
+      ...(imageUrl && { imageUrl }),
+      ...(tags && { tags }),
+    };
+    const query = { _id: req.params.blog_id };
+
+    const update = { $set: updatedValues };
+
+    await Blog.updateOne(query, update);
+    res
+      .status(200)
+      .json({ status: "success", message: "blog updated successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "failed", message: error.message });
+  }
+};
+
+module.exports = { createBlog, getAllBlogs, getMyBlogs, updateMyBlog };
