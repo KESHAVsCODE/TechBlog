@@ -17,6 +17,12 @@ const UserSchema = new Schema({
     required: true,
     unique: true,
   },
+  blogs: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Blog",
+    },
+  ],
 });
 
 const User = model("users", UserSchema);
