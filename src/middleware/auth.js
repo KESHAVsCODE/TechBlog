@@ -9,7 +9,6 @@ const checkUserLogin = async (req, res, next) => {
   const token = authorization.split(" ")[1];
   try {
     const userInfo = jwt.verify(token, process.env.SECRET_TOKEN_KEY);
-    console.log("userInfo", userInfo);
     req.userId = userInfo.id;
     next();
   } catch (error) {

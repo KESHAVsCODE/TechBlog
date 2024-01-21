@@ -7,5 +7,4 @@ const { checkUserLogin } = require("../middleware/auth");
 router.post("/signup", signup);
 router.post("/login", login);
 router.get("/profile", checkUserLogin, getProfile);
-
 module.exports = router;

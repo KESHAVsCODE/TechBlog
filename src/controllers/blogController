@@ -3,13 +3,20 @@ const User = require("../models/userModel");
 const createBlog = async (req, res) => {
   const { title, description, imageUrl, tag } = req.body;
 
+  if (!title || !description) {
+    return res.status(400).json({
+      status: "failed",
+      message: "title and description are required",
+    });
+  }
+
   try {
     const user = await User.findById(req.userId);
 
     const blog = await Blog.create({
       title,
       description,
-      userId: req.userId,
+      user: req.userId,
       userName: user.userName,
       tag,
       imageUrl,
@@ -21,6 +28,28 @@ const createBlog = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failed", error: error.message });
+  }
+};
+
+const deleteBlog = async (req, res) => {
+  const blogId = req.params.blog_id;
+  try {
+    const blog = await Blog.findById(blogId);
+
+    if (!blog.user.equals(req.userId)) {
+      return res.status(401).json({
+        status: "failed",
+        message: "you are not authorized to delete this blog",
+      });
+    }
+
+    await Blog.findByIdAndDelete(blogId);
+    res
+      .status(200)
+      .json({ status: "success", message: "blog deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "failed", message: error.message });
   }
 };
 
@@ -36,7 +65,9 @@ const getAllBlogs = async (req, res) => {
 
 const getMyBlogs = async (req, res) => {
   try {
-    const blogs = await User.findById(req.userId).select({ blogs: 1 });
+    const blogs = await User.findById(req.userId)
+      .select({ blogs: 1 })
+      .populate({ path: "blogs", model: "blogs" });
     res.status(200).json({ status: "success", data: blogs });
   } catch (error) {
     console.log(error);
@@ -45,25 +76,33 @@ const getMyBlogs = async (req, res) => {
 };
 
 const updateMyBlog = async (req, res) => {
-  const { title, description, imageUrl, tags } = req.body;
+  const { title, description, imageUrl, tag } = req.body;
 
-  if (!title && !description && !imageUrl && !tags) {
+  const blogId = req.params.blog_id;
+
+  if (!title && !description && !imageUrl && !tag) {
     return res
-      .status(200)
-      .json({ status: "success", message: "no updates provided" });
+      .status(400)
+      .json({ status: "failed", message: "no updates provided" });
   }
 
+  const updatedValues = {
+    ...(title && { title }),
+    ...(description && { description }),
+    ...(imageUrl && { imageUrl }),
+    ...(tag && { tag }),
+  };
+  const query = { _id: blogId };
+  const update = { $set: updatedValues };
+
   try {
-    const updatedValues = {
-      ...(title && { title }),
-      ...(description && { description }),
-      ...(imageUrl && { imageUrl }),
-      ...(tags && { tags }),
-    };
-    const query = { _id: req.params.blog_id };
-
-    const update = { $set: updatedValues };
-
+    const blog = await Blog.findById(blogId);
+    if (!blog.user.equals(req.userId)) {
+      return res.status(401).json({
+        status: "failed",
+        message: "you are not authorized to update this blog",
+      });
+    }
     await Blog.updateOne(query, update);
     res
       .status(200)
@@ -74,4 +113,21 @@ const updateMyBlog = async (req, res) => {
   }
 };
 
-module.exports = { createBlog, getAllBlogs, getMyBlogs, updateMyBlog };
+const getBlogDetails = async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.blog_id);
+    res.status(200).json({ status: "success", data: blog });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "failed", message: error.message });
+  }
+};
+
+module.exports = {
+  createBlog,
+  deleteBlog,
+  getAllBlogs,
+  getMyBlogs,
+  updateMyBlog,
+  getBlogDetails,
+};
