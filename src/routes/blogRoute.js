@@ -8,6 +8,8 @@ const {
   updateMyBlog,
   getBlogDetails,
   deleteBlog,
+  createComment,
+  // deleteComment,
 } = require("../controllers/blogController");
 const { checkUserLogin } = require("../middleware/auth");
 
@@ -17,5 +19,7 @@ router.get("/all", checkUserLogin, getAllBlogs);
 router.get("/my_blogs", checkUserLogin, getMyBlogs);
 router.patch("/update/:blog_id", checkUserLogin, updateMyBlog);
 router.get("/blog_details/:blog_id", checkUserLogin, getBlogDetails);
+router.post("/comment/:blog_id", checkUserLogin, createComment);
+// router.delete("/comment/:blog_id", checkUserLogin, deleteComment);
 
 module.exports = router;
