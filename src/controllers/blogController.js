@@ -1,6 +1,6 @@
 const Blog = require("../models/blogModel");
 const User = require("../models/userModel");
-const Comment = require("../models/commentModel");
+
 const createBlog = async (req, res) => {
   const { title, description, imageUrl, tag } = req.body;
 
@@ -43,7 +43,8 @@ const deleteBlog = async (req, res) => {
         message: "you are not authorized to delete this blog",
       });
     }
-
+    //first delete all comments that are associated with this blog
+    await Comment.deleteMany({ _id: { $in: blog.comments } });
     await Blog.findByIdAndDelete(blogId);
     res
       .status(200)
@@ -57,18 +58,6 @@ const deleteBlog = async (req, res) => {
 const getAllBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find();
-    res.status(200).json({ status: "success", data: blogs });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: "failed", message: error.message });
-  }
-};
-
-const getMyBlogs = async (req, res) => {
-  try {
-    const blogs = await User.findById(req.userId)
-      .select({ blogs: 1 })
-      .populate({ path: "blogs", model: "blogs" });
     res.status(200).json({ status: "success", data: blogs });
   } catch (error) {
     console.log(error);
@@ -116,7 +105,10 @@ const updateMyBlog = async (req, res) => {
 
 const getBlogDetails = async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.blog_id);
+    const blog = await Blog.findById(req.params.blog_id).populate({
+      path: "comments",
+      model: "comments",
+    });
     res.status(200).json({ status: "success", data: blog });
   } catch (error) {
     console.log(error);
@@ -124,33 +116,41 @@ const getBlogDetails = async (req, res) => {
   }
 };
 
-const createComment = async (req, res) => {
+const vote = async (req, res) => {
+  const { vote } = req.query;
   const blogId = req.params.blog_id;
   const userId = req.userId;
-  const { message } = req.body;
-  if (!message)
-    res.status(400).json({ status: "failed", message: "message is required" });
-  try {
-    const comment = await Comment.create({
-      user: userId,
-      blog: blogId,
-      message,
-    });
+  if (!vote)
+    res.status(400).json({ status: "failed", message: "vote is required" });
 
-    await Blog.findByIdAndUpdate(blogId, { $push: { comments: comment._id } });
-    console.log(comment);
-    res.status(200).json({ status: "success", data: "comment has been added" });
+  const query = { _id: blogId };
+  let update;
+
+  if (vote === "upVote" || vote === "downVote") {
+    update = {
+      $inc: { [vote]: 1 },
+      $addToSet: { votedBy: userId },
+    };
+  } else {
+    return res
+      .status(400)
+      .json({ status: "failed", message: "invalid vote type" });
+  }
+
+  try {
+    await Blog.updateOne(query, update);
+    res.status(200).json({ status: "success", data: "voting successful" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "failed", message: error.message });
   }
 };
+
 module.exports = {
   createBlog,
   deleteBlog,
   getAllBlogs,
-  getMyBlogs,
   updateMyBlog,
   getBlogDetails,
-  createComment,
+  vote,
 };

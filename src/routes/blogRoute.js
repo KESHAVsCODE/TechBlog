@@ -3,23 +3,26 @@ const router = express.Router();
 
 const {
   createBlog,
-  getAllBlogs,
-  getMyBlogs,
   updateMyBlog,
+  getAllBlogs,
   getBlogDetails,
   deleteBlog,
-  createComment,
-  // deleteComment,
 } = require("../controllers/blogController");
 const { checkUserLogin } = require("../middleware/auth");
 
-router.post("/create", checkUserLogin, createBlog);
-router.delete("/delete/:blog_id", checkUserLogin, deleteBlog);
-router.get("/all", checkUserLogin, getAllBlogs);
-router.get("/my_blogs", checkUserLogin, getMyBlogs);
-router.patch("/update/:blog_id", checkUserLogin, updateMyBlog);
-router.get("/blog_details/:blog_id", checkUserLogin, getBlogDetails);
-router.post("/comment/:blog_id", checkUserLogin, createComment);
-// router.delete("/comment/:blog_id", checkUserLogin, deleteComment);
+//fetch all blogs
+router.get("/", getAllBlogs);
+
+//create a new blog
+router.post("/", checkUserLogin, createBlog);
+
+//delete a blog
+router.delete("/:blog_id", checkUserLogin, deleteBlog);
+
+//update a existing blog
+router.patch("/:blog_id", checkUserLogin, updateMyBlog);
+
+//fetch a particular blog details
+router.get("/:blog_id", checkUserLogin, getBlogDetails);
 
 module.exports = router;
