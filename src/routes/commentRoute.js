@@ -3,11 +3,11 @@ const router = express.Router();
 
 const {
   createComment,
-  // deleteComment,
+  deleteComment,
 } = require("../controllers/commentController");
 const { checkUserLogin } = require("../middleware/auth");
 
 router.post("/:blog_id", checkUserLogin, createComment);
-// router.delete("/:blog_id", checkUserLogin, deleteComment);
+router.delete("/:blog_id/:comment_id", checkUserLogin, deleteComment);
 
 module.exports = router;

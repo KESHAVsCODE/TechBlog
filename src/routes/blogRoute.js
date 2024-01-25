@@ -7,6 +7,7 @@ const {
   getAllBlogs,
   getBlogDetails,
   deleteBlog,
+  voteForBlog,
 } = require("../controllers/blogController");
 const { checkUserLogin } = require("../middleware/auth");
 
@@ -24,5 +25,7 @@ router.patch("/:blog_id", checkUserLogin, updateMyBlog);
 
 //fetch a particular blog details
 router.get("/:blog_id", checkUserLogin, getBlogDetails);
+
+router.patch("/:blog_id/vote", checkUserLogin, voteForBlog);
 
 module.exports = router;

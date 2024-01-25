@@ -116,19 +116,19 @@ const getBlogDetails = async (req, res) => {
   }
 };
 
-const vote = async (req, res) => {
-  const { vote } = req.query;
+const voteForBlog = async (req, res) => {
+  const { voteType } = req.query;
   const blogId = req.params.blog_id;
   const userId = req.userId;
-  if (!vote)
+  if (!voteType)
     res.status(400).json({ status: "failed", message: "vote is required" });
 
-  const query = { _id: blogId };
   let update;
-
-  if (vote === "upVote" || vote === "downVote") {
+  console.log(voteType);
+  if (voteType === "upVote" || voteType === "downVote") {
     update = {
-      $inc: { [vote]: 1 },
+      $pull: { votedBy: userId },
+      $inc: { [voteType]: 1 },
       $addToSet: { votedBy: userId },
     };
   } else {
@@ -138,7 +138,7 @@ const vote = async (req, res) => {
   }
 
   try {
-    await Blog.updateOne(query, update);
+    await Blog.updateOne(blogId, update);
     res.status(200).json({ status: "success", data: "voting successful" });
   } catch (error) {
     console.log(error);
@@ -152,5 +152,5 @@ module.exports = {
   getAllBlogs,
   updateMyBlog,
   getBlogDetails,
-  vote,
+  voteForBlog,
 };
